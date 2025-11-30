@@ -170,15 +170,40 @@ async function processByFileId(ctx, fileId){
 // --------- فلاتر الفيديو ----------
 function buildVf(s){
   const up = s.upscale || 1;
-  const scale = up===1 ? 'scale=iw:ih' : `scale=iw*${up}:ih*${up}:flags=lanczos`;
-  const chain = {
-    AUTO:  ['hqdn3d=1.8:1.8:6:6','unsharp=5:5:0.9:5:5:0.0',scale],
-    CLEAN: ['hqdn3d=4:4:8:8','nlmeans=s=2.2:p=6:pc=6','unsharp=7:7:1.2:7:7:0.0',scale],
-    STAB:  ['deshake=rx=8:ry=8:edge=black','pp=al','hqdn3d=3:3:6:6','unsharp=5:5:0.9',scale],
-    COLOR: ['hqdn3d=1.6:1.6:5:5','eq=contrast=1.06:brightness=0.02:saturation=1.12','unsharp=5:5:0.8:3:3:0.0',scale]
-  }[s.mode || 'AUTO'];
-  return chain.join(',');
+  const scale = up === 1
+    ? 'scale=iw:ih'
+    : `scale=iw*${up}:ih*${up}:flags=lanczos`;
+
+  const chains = {
+    AUTO: [
+      'hqdn3d=2.0:2.0:6:6',                   // نويز متوسط
+      'unsharp=7:7:1.0:7:7:0.0',              // شحذ أقوى
+      scale
+    ],
+    CLEAN: [
+      'hqdn3d=4:4:8:8',                       // تنظيف قوي
+      'nlmeans=s=2.5:p=7:pc=7',               // إزالة نويز متقدمة (واضحة في الفيديو الخايس)
+      'unsharp=7:7:1.3:7:7:0.0',              // شحذ عالي
+      scale
+    ],
+    STAB: [
+      'deshake=rx=8:ry=8:edge=black',         // تثبيت
+      'pp=al',                                // إزالة بلوكات
+      'hqdn3d=3:3:6:6',
+      'unsharp=6:6:1.0:6:6:0.0',
+      scale
+    ],
+    COLOR: [
+      'hqdn3d=1.8:1.8:5:5',
+      'eq=contrast=1.08:brightness=0.03:saturation=1.18', // ألوان أجرأ
+      'unsharp=6:6:1.0:6:6:0.0',
+      scale
+    ]
+  };
+
+  return (chains[s.mode] || chains.AUTO).join(',');
 }
+
 
 // --------- أدوات مساعدة ----------
 function download(url, dest){
