@@ -176,26 +176,25 @@ function buildVf(s){
 
   const chains = {
     AUTO: [
-      'hqdn3d=2.0:2.0:6:6',                   // نويز متوسط
-      'unsharp=7:7:1.0:7:7:0.0',              // شحذ أقوى
+      'hqdn3d=2.0:2.0:6:6',                    // إزالة نويز متوسطة
+      'unsharp=7:7:1.0:7:7:0.0',               // شحذ واضح
       scale
     ],
     CLEAN: [
-      'hqdn3d=4:4:8:8',                       // تنظيف قوي
-      'nlmeans=s=2.5:p=7:pc=7',               // إزالة نويز متقدمة (واضحة في الفيديو الخايس)
-      'unsharp=7:7:1.3:7:7:0.0',              // شحذ عالي
+      'hqdn3d=4:4:8:8',                        // تنظيف قوي
+      'atadenoise',                            // فلتر إزالة نويز ذكي وموجود غالبًا
+      'unsharp=7:7:1.2:7:7:0.0',               // شحذ قوي
       scale
     ],
     STAB: [
-      'deshake=rx=8:ry=8:edge=black',         // تثبيت
-      'pp=al',                                // إزالة بلوكات
-      'hqdn3d=3:3:6:6',
-      'unsharp=6:6:1.0:6:6:0.0',
+      'deshake=rx=8:ry=8:edge=black',          // تثبيت اهتزاز
+      'hqdn3d=3:3:6:6',                        // إزالة نويز
+      'unsharp=6:6:1.0:6:6:0.0',               // شحذ متوسط
       scale
     ],
     COLOR: [
-      'hqdn3d=1.8:1.8:5:5',
-      'eq=contrast=1.08:brightness=0.03:saturation=1.18', // ألوان أجرأ
+      'hqdn3d=1.8:1.8:5:5',                    // شوي تنظيف
+      'eq=contrast=1.08:brightness=0.03:saturation=1.18', // تعديل ألوان
       'unsharp=6:6:1.0:6:6:0.0',
       scale
     ]
@@ -203,7 +202,6 @@ function buildVf(s){
 
   return (chains[s.mode] || chains.AUTO).join(',');
 }
-
 
 // --------- أدوات مساعدة ----------
 function download(url, dest){
