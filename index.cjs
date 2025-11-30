@@ -174,33 +174,37 @@ function buildVf(s){
     ? 'scale=iw:ih'
     : `scale=iw*${up}:ih*${up}:flags=lanczos`;
 
-  const chains = {
-    AUTO: [
-      'hqdn3d=2.0:2.0:6:6',                    // إزالة نويز متوسطة
-      'unsharp=7:7:1.0:7:7:0.0',               // شحذ واضح
-      scale
-    ],
-    CLEAN: [
-      'hqdn3d=4:4:8:8',                        // تنظيف قوي
-      'atadenoise',                            // فلتر إزالة نويز ذكي وموجود غالبًا
-      'unsharp=7:7:1.2:7:7:0.0',               // شحذ قوي
-      scale
-    ],
-    STAB: [
-      'deshake=rx=8:ry=8:edge=black',          // تثبيت اهتزاز
-      'hqdn3d=3:3:6:6',                        // إزالة نويز
-      'unsharp=6:6:1.0:6:6:0.0',               // شحذ متوسط
-      scale
-    ],
-    COLOR: [
-      'hqdn3d=1.8:1.8:5:5',                    // شوي تنظيف
-      'eq=contrast=1.08:brightness=0.03:saturation=1.18', // تعديل ألوان
-      'unsharp=6:6:1.0:6:6:0.0',
-      scale
-    ]
-  };
+  // كل الأوضاع تستخدم فلاتر آمنة، الاختلاف في قوة التنظيف والشحذ
+  switch (s.mode) {
+    case 'CLEAN':
+      return [
+        'hqdn3d=4:4:8:8',            // تنظيف قوي
+        'unsharp=7:7:1.2:7:7:0.0',   // شحذ قوي
+        scale
+      ].join(',');
 
-  return (chains[s.mode] || chains.AUTO).join(',');
+    case 'STAB': // نخليه "نعومة وثبات" بدون deshake عشان ما يطيح ffmpeg
+      return [
+        'hqdn3d=3:3:6:6',            // تنظيف متوسط
+        'unsharp=6:6:1.0:6:6:0.0',   // شحذ متوسط
+        scale
+      ].join(',');
+
+    case 'COLOR': // نخليه "واضح وحاد" بدون لعب كثير في الألوان عشان نتجنب eq
+      return [
+        'hqdn3d=2:2:6:6',            // تنظيف أخف
+        'unsharp=5:5:0.8:5:5:0.0',   // شحذ خفيف
+        scale
+      ].join(',');
+
+    case 'AUTO':
+    default:
+      return [
+        'hqdn3d=2.0:2.0:6:6',        // تنظيف متوسط
+        'unsharp=7:7:1.0:7:7:0.0',   // شحذ واضح
+        scale
+      ].join(',');
+  }
 }
 
 // --------- أدوات مساعدة ----------
